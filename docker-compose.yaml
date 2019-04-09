@@ -1,0 +1,33 @@
+version: '3.6'
+networks:
+  network: {}
+services:
+
+  kafka:
+    image: cclhsu/alpine_kafka:latest
+    container_name: kafka
+    hostname: docker-kafka
+    ports:
+      - "9092:9092"
+      - "1099:1099"
+    links:
+      - zookeeper:docker-zookeeper
+    depends_on:
+      - zookeeper
+    extra_hosts:
+      - 'docker-kafka:127.0.0.1'
+    environment:
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ADVERTISED_HOST_NAME: docker-kafka
+      KAFKA_ZOOKEEPER_CONNECT: docker-zookeeper:2181
+    networks:
+      - network
+
+  zookeeper:
+    image: cclhsu/alpine_zookeeper:latest
+    container_name: zookeeper
+    hostname: docker-zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - network
