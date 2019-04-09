@@ -2,7 +2,6 @@ version: '3.6'
 networks:
   network: {}
 services:
-
   kafka:
     image: cclhsu/alpine_kafka:latest
     container_name: kafka
@@ -22,7 +21,6 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: docker-zookeeper:2181
     networks:
       - network
-
   zookeeper:
     image: cclhsu/alpine_zookeeper:latest
     container_name: zookeeper
