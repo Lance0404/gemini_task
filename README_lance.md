@@ -188,6 +188,7 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic firewall --f
 ```
 
 # reference
+* [Spark Streaming Programming Guide](https://spark.apache.org/docs/latest/streaming-programming-guide.html)
 * [Spark Streaming + Kafka Integration Guide (Kafka broker version 0.8.2.1 or higher)
 ](https://spark.apache.org/docs/2.4.1/streaming-kafka-0-8-integration.html)
 * [Structured Streaming + Kafka Integration Guide (Kafka broker version 0.10.0 or higher)](https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html)

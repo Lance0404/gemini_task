@@ -60,7 +60,8 @@ topic = 'firewall'
 partition = 0
 kafka_param = {
     "metadata.broker.list": 'localhost:9092',
-    "auto.offset.reset": "smallest"
+    "auto.offset.reset": "smallest",
+    "group.id": 'mygroup',
 }
 topicPartion = TopicAndPartition(topic, partition)
 fromOffsets = {topicPartion: 500}
