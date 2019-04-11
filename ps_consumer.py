@@ -34,46 +34,46 @@ directKafkaStream = KafkaUtils.createDirectStream(
 '''
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
+    # os.environ['SPARK_LOCAL_IP'] = '172.0.0.1'
+    # os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming-kafka-0-8:2.4.1 pyspark-shell'
 
-# os.environ['SPARK_LOCAL_IP'] = '172.0.0.1'
-# os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming-kafka-0-8:2.4.1 pyspark-shell'
+    sc_conf = SparkConf()
+    sc_conf.setAppName('ps_consumer')
+    sc_conf.setMaster('local[*]')
+    # sc_conf.set('spark.executor.memory', '2g')
+    # sc_conf.set('spark.executor.cores', '4')
+    # sc_conf.set('spark.cores.max', '40')
+    sc_conf.set('spark.logConf', True)
 
-sc_conf = SparkConf()
-sc_conf.setAppName('ps_consumer')
-sc_conf.setMaster('local[*]')
-# sc_conf.set('spark.executor.memory', '2g')
-# sc_conf.set('spark.executor.cores', '4')
-# sc_conf.set('spark.cores.max', '40')
-sc_conf.set('spark.logConf', True)
+    # sc = SparkContext(master='local[*]', appName='ps_consumer')
+    sc = SparkContext(conf=sc_conf)
+    sc.setLogLevel('WARN')
+    # print(sc)
 
-# sc = SparkContext(master='local[*]', appName='ps_consumer')
-sc = SparkContext(conf=sc_conf)
-sc.setLogLevel('DEBUG')
-# print(sc)
+    ssc = StreamingContext(sc, 5)
+    # print(ssc)
 
-ssc = StreamingContext(sc, 1.0)
-# print(ssc)
+    topic = 'firewall'
+    partition = 0
+    kafka_param = {
+        "metadata.broker.list": 'localhost:9092',
+        "auto.offset.reset": "smallest",
+        "group.id": 'mygroup',
+    }
+    # topicPartion = TopicAndPartition(topic, partition)
+    # fromOffsets = {topicPartion: 500}
+    # directKafkaStream = KafkaUtils.createDirectStream(
+    # ssc, [topic], kafka_param, fromOffsets=fromOffsets)
 
-topic = 'firewall'
-partition = 0
-kafka_param = {
-    "metadata.broker.list": 'localhost:9092',
-    "auto.offset.reset": "smallest",
-    "group.id": 'mygroup',
-}
-topicPartion = TopicAndPartition(topic, partition)
-fromOffsets = {topicPartion: 500}
-# directKafkaStream = KafkaUtils.createDirectStream(
-# ssc, [topic], kafka_param, fromOffsets=fromOffsets)
+    directKafkaStream = KafkaUtils.createDirectStream(
+        ssc, [topic], kafka_param)
+    print(directKafkaStream)
 
-directKafkaStream = KafkaUtils.createDirectStream(ssc, [topic], kafka_param)
-print(directKafkaStream)
+    lines = directKafkaStream.map(lambda x: json.loads(x[1]))
+    lines.pprint()
+    ssc.start()
+    ssc.awaitTermination()
 
-lines = directKafkaStream.map(lambda x: json.loads(x[1]))
-lines.pprint()
-ssc.start()
-ssc.awaitTermination()
-
-# sys.exit()
+    # sys.exit()

@@ -167,6 +167,18 @@ org.apache.spark.SparkException: Couldn't find leader offsets for Set([firewall,
 python spark_readfile.py > tmp 2>&1
 ```
 
+* execute w/ spark-submit
+```
+# failed
+spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8:2.4.1 ps_consumer.py
+
+# successful!
+spark-submit --jars /root/.local/share/virtualenvs/gemini_task-p6OkMWYi/lib/python3.7/site-packages/pyspark/jars/spark-streaming-kafka-0-8-assembly_2.11-2.4.1.jar ps_consumer.py
+
+
+
+```
+
 # monitor
 * ps -ef | grep spark
 ```
@@ -199,3 +211,5 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic firewall --f
 * [RDD methods](https://spark.apache.org/docs/latest/rdd-programming-guide.html#transformations)
 * [java.nio.channels.ClosedChannelException
 ](https://stackoverflow.com/questions/2801087/java-nio-channels-closedchannelexception)
+* [Spark streaming & Kafka in python: A test on local machine](https://medium.com/@kass09/spark-streaming-kafka-in-python-a-test-on-local-machine-edd47814746
+)
