@@ -20,6 +20,7 @@ https://stackoverflow.com/questions/2801087/java-nio-channels-closedchannelexcep
 from pyspark import SparkContext, SparkConf
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils, TopicAndPartition
+from pyspark.sql import Row, SparkSession
 import sys
 import os
 import json
@@ -32,6 +33,32 @@ directKafkaStream = KafkaUtils.createDirectStream(
     ssc, [topic], {"metadata.broker.list": brokers})
 
 '''
+
+
+def getSparkSessionInstance(sparkConf):
+    if ('sparkSessionSingletonInstance' not in globals()):
+        globals()['sparkSessionSingletonInstance'] = SparkSession\
+            .builder\
+            .config(conf=sparkConf)\
+            .getOrCreate()
+    return globals()['sparkSessionSingletonInstance']
+
+
+def dict2sqlrow(x: dict):
+
+    tmp = {
+        'timestamp': x['timestamp'],
+        'user': x['user'],
+        'action': x['action'],
+        'app': x['app'],
+        'server': x['server']
+    }
+    return Row(**tmp)
+
+
+def dict2tuple(x: dict):
+    tmp = (x['timestamp'], x['user'], x['action'], x['app'], x['server'])
+    return tmp
 
 
 if __name__ == '__main__':
@@ -49,7 +76,7 @@ if __name__ == '__main__':
 
     # sc = SparkContext(master='local[*]', appName='ps_consumer')
     sc = SparkContext(conf=sc_conf)
-    sc.setLogLevel('WARN')
+    sc.setLogLevel('DEBUG')
     # print(sc)
 
     ssc = StreamingContext(sc, 5)
@@ -64,16 +91,55 @@ if __name__ == '__main__':
     }
     # topicPartion = TopicAndPartition(topic, partition)
     # fromOffsets = {topicPartion: 500}
-    # directKafkaStream = KafkaUtils.createDirectStream(
+    # stream = KafkaUtils.createDirectStream(
     # ssc, [topic], kafka_param, fromOffsets=fromOffsets)
 
-    directKafkaStream = KafkaUtils.createDirectStream(
+    stream = KafkaUtils.createDirectStream(
         ssc, [topic], kafka_param)
-    print(directKafkaStream)
+    print(stream)
 
-    lines = directKafkaStream.map(lambda x: json.loads(x[1]))
+    lines = stream.map(lambda x: json.loads(x[1]))
+    # lines = lines.map(lambda y: (
+    # y['timestamp'], y['user'], y['action'], y['app'], y['server']))
     lines.pprint()
+
+    users = lines.map(lambda x: x['user'])
+    users.pprint()
+    # tmp = (x['timestamp'], x['user'], x['action'], x['app'], x['server'])
+    # spark = SparkSession(sc)
+    if 0:
+        col_header = ['timestamp', 'user', 'action', 'app', 'server']
+        df = lines.toDF(col_header)
+        df.pprint()
+
+    if 1:
+
+        # Convert RDDs of the words DStream to DataFrame and run SQL query
+
+        def process(time, rdd):
+            print("========= %s =========" % str(time))
+            # spark = SparkSession.builder.config(conf=sc_conf).getOrCreate()
+            spark = getSparkSessionInstance(rdd.context.getConf())
+
+            # rowRdd = rdd.map(dict2sqlrow)
+            rowRdd = rdd.map(lambda w: Row(user=w))
+            # rowRdd.pprint()
+
+            df = spark.createDataFrame(rowRdd)
+            # dfRdd.show()
+            df.createOrReplaceTempView("firewall")
+
+            aggdf = spark.sql(
+                "select user, count(*) as ucount from firewall group by user")
+            aggdf.show()
+            # aggdf.pprint()
+            # aggdf.print()
+            # aggdf.collect()
+
+        # lines.foreachRDD(process)
+        users.foreachRDD(process)
+
     ssc.start()
     ssc.awaitTermination()
 
-    # sys.exit()
+    # sys.exit() # checkpoint

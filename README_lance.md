@@ -175,8 +175,6 @@ spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8:2.4.1 ps_cons
 # successful!
 spark-submit --jars /root/.local/share/virtualenvs/gemini_task-p6OkMWYi/lib/python3.7/site-packages/pyspark/jars/spark-streaming-kafka-0-8-assembly_2.11-2.4.1.jar ps_consumer.py
 
-
-
 ```
 
 # monitor
@@ -213,3 +211,5 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic firewall --f
 ](https://stackoverflow.com/questions/2801087/java-nio-channels-closedchannelexception)
 * [Spark streaming & Kafka in python: A test on local machine](https://medium.com/@kass09/spark-streaming-kafka-in-python-a-test-on-local-machine-edd47814746
 )
+* [streaming examples](https://github.com/apache/spark/tree/master/examples/src/main/python/streaming)
+* [Spark SQL Guide](https://spark.apache.org/docs/latest/sql-getting-started.html)
