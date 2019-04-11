@@ -41,7 +41,7 @@ def dosth(time, rdd, spark):
     df.groupBy("user").count().show()
 
     df.createOrReplaceTempView('firewall')
-    sqlDF = spark.sql("select * from firewall limit 3")
+    sqlDF = spark.sql("select server,app,count(*) from firewall group by server, app, action")
     sqlDF.show()
 
     sqlDF.write.parquet("data/firewall.parquet")

@@ -213,3 +213,8 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic firewall --f
 )
 * [streaming examples](https://github.com/apache/spark/tree/master/examples/src/main/python/streaming)
 * [Spark SQL Guide](https://spark.apache.org/docs/latest/sql-getting-started.html)
+* [SQLContext](https://github.com/claudiofahey/global_anomaly_detection_demo/blob/master/spark_streaming_processor.py)
+* [Create Spark DataFrame in Spark Streaming from JSON Message on Kafka
+](https://stackoverflow.com/questions/31076224/create-spark-dataframe-in-spark-streaming-from-json-message-on-kafka)
+* [Calculate Pi using PySpark](https://towardsdatascience.com/how-to-get-started-with-pyspark-1adc142456ec)
+* [change schema](https://stackoverflow.com/questions/46432789/how-to-change-pyspark-data-frame-column-data-type)
