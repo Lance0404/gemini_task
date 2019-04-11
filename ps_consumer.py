@@ -1,25 +1,3 @@
-'''
-issues:
-https://github.com/jupyter/docker-stacks/issues/743
-
-after setting:
-os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming-kafka-0-8:2.4.1 pyspark-shell'
-
-another issue appeared:
-module not found: org.apache.spark#spark-streaming-kafka-0-8;2.4.1
-
-19/04/10 16:34:30 WARN Utils: Your hostname, ubuntu resolves to a loopback address: 127.0.1.1; using 192.168.18.111 instead (on interface ens160)
-19/04/10 16:34:30 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
-
-https://stackoverflow.com/questions/2801087/java-nio-channels-closedchannelexception
-
-# stared
-https://github.com/claudiofahey/global_anomaly_detection_demo/blob/master/spark_streaming_processor.py
-
-https://stackoverflow.com/questions/31076224/create-spark-dataframe-in-spark-streaming-from-json-message-on-kafka
-
-'''
-
 from pyspark import SparkContext, SparkConf
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils, TopicAndPartition
@@ -28,16 +6,6 @@ from pyspark.streaming.util import rddToFileName
 import sys
 import os
 import json
-'''
-* approach 1
-kafkaStream = KafkaUtils.createStream(streamingContext,
-                                      [ZK quorum], [consumer group id], [per - topic number of Kafka partitions to consume])
-# approach 2
-directKafkaStream = KafkaUtils.createDirectStream(
-    ssc, [topic], {"metadata.broker.list": brokers})
-
-'''
-
 
 def getSqlContextInstance(sparkContext):
     """Lazily instantiated global instance of SQLContext
@@ -48,29 +16,15 @@ def getSqlContextInstance(sparkContext):
 
 
 def getSparkSessionInstance(sparkConf):
+    '''
+    not used
+    '''
     if ('sparkSessionSingletonInstance' not in globals()):
         globals()['sparkSessionSingletonInstance'] = SparkSession\
             .builder\
             .config(conf=sparkConf)\
             .getOrCreate()
     return globals()['sparkSessionSingletonInstance']
-
-
-def dict2sqlrow(x: dict):
-
-    tmp = {
-        'timestamp': x['timestamp'],
-        'user': x['user'],
-        'action': x['action'],
-        'app': x['app'],
-        'server': x['server']
-    }
-    return Row(**tmp)
-
-
-def dict2tuple(x: dict):
-    tmp = (x['timestamp'], x['user'], x['action'], x['app'], x['server'])
-    return tmp
 
 
 def json_to_row(s):
