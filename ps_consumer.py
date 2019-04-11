@@ -43,18 +43,24 @@ def dosth(time, rdd, spark):
     df = sqlContext.createDataFrame(rdd)
     df.show()
     df.printSchema()
-    df.groupBy("user").count().show()
+    # df.groupBy("user").count().show()
 
     df.createOrReplaceTempView('firewall')
     sqlDF = spark.sql("select server,app,action,count(*) as cnt from firewall group by server, app, action order by cnt desc")
     sqlDF.show()
 
-    sqlDF.write.parquet("data/firewall.parquet")
+    # output as parquet file
+    if 1:
+        sqlDF.write.parquet("data/firewall.parquet")
 
-    pqtDF = spark.read.parquet("data/firewall.parquet")
-    pqtDF.createOrReplaceTempView("pqt_firewall")
-    pqtv2DF = spark.sql("SELECT * FROM pqt_firewall")
-    pqtv2DF.show()
+    # read from parquet
+    if 0:
+        pqtDF = spark.read.parquet("data/firewall.parquet")
+        pqtDF.createOrReplaceTempView("pqt_firewall")
+        pqtv2DF = spark.sql("SELECT * FROM pqt_firewall")
+        pqtv2DF.show()
+
+    # output as json
     if 0:
         enriched_data_path = 'data/firewall_df.json'
         path = rddToFileName(enriched_data_path, None, time)
