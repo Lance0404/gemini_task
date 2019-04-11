@@ -5,6 +5,10 @@
 4. pyspark installed with pipenv (O)
 5. manually added a missing jar file into the pyspark env (O)
 6. trying to consume kafka with pyspark (O)
+    ```shell
+    vi /etc/hosts
+    127.0.0.1       docker-kafka
+    ```
 7. convert Dstream to dataframe (O)
 8. do sql query on dataframe (O)
 9. output dataframe to parquet file (O) 
@@ -19,5 +23,9 @@ spark-submit --jars /root/.local/share/virtualenvs/gemini_task-p6OkMWYi/lib/pyth
 ls data/firewall.parquet
 ```
 
+### Issues
+1. the output of parquet dir should be first be removed everytime restarting the spark app
 
-
+### Futhur Study Requirement
+1. Spark
+2. Parquet

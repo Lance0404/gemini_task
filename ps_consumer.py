@@ -46,16 +46,19 @@ def dosth(time, rdd, spark):
     df.groupBy("user").count().show()
 
     df.createOrReplaceTempView('firewall')
-    sqlDF = spark.sql("select server,app,count(*) from firewall group by server, app, action")
+    sqlDF = spark.sql("select server,app,action,count(*) as cnt from firewall group by server, app, action order by cnt desc")
     sqlDF.show()
 
     sqlDF.write.parquet("data/firewall.parquet")
 
+    pqtDF = spark.read.parquet("data/firewall.parquet")
+    pqtDF.createOrReplaceTempView("pqt_firewall")
+    pqtv2DF = spark.sql("SELECT * FROM pqt_firewall")
+    pqtv2DF.show()
     if 0:
         enriched_data_path = 'data/firewall_df.json'
-        if enriched_data_path:
-            path = rddToFileName(enriched_data_path, None, time)
-            df.write.json(path, mode='error')
+        path = rddToFileName(enriched_data_path, None, time)
+        sqlDF.write.json(path, mode='error')
 
 
 
@@ -63,7 +66,7 @@ def dosth(time, rdd, spark):
 if __name__ == '__main__':
 
     sc_conf = SparkConf()
-    sc_conf.setAppName('ps_consumer')
+    sc_conf.setAppName('ps_consumer') # pyspark consumer
     sc_conf.setMaster('local[*]')
     # sc_conf.set('spark.executor.memory', '2g')
     # sc_conf.set('spark.executor.cores', '4')
@@ -94,7 +97,7 @@ if __name__ == '__main__':
     stream = KafkaUtils.createDirectStream(
         ssc, [topic], kafka_param)
 
-    messages = stream.map(lambda x: x[1])
+    messages = stream.map(lambda x: x[1]) # pick only the value, exclude the key
     rows = messages.map(json_to_row)
 
     spark = SparkSession.builder.config(conf=sc_conf).getOrCreate()

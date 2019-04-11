@@ -218,3 +218,5 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic firewall --f
 ](https://stackoverflow.com/questions/31076224/create-spark-dataframe-in-spark-streaming-from-json-message-on-kafka)
 * [Calculate Pi using PySpark](https://towardsdatascience.com/how-to-get-started-with-pyspark-1adc142456ec)
 * [change schema](https://stackoverflow.com/questions/46432789/how-to-change-pyspark-data-frame-column-data-type)
+* [Spark configuration](https://spark.apache.org/docs/latest/configuration.html)
+* [parquest opteration](https://spark.apache.org/docs/latest/sql-data-sources-parquet.html)
