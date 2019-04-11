@@ -61,7 +61,7 @@ def dosth(time, rdd, spark):
         pqtv2DF.show()
 
     # output as json
-    if 0:
+    if 1:
         enriched_data_path = 'data/firewall_df.json'
         path = rddToFileName(enriched_data_path, None, time)
         sqlDF.write.json(path, mode='error')

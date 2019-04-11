@@ -26,6 +26,11 @@ ls data/firewall.parquet
 ### Issues
 1. the output of parquet dir should be first be removed everytime restarting the spark app
 
+### Todo list
+1. change dataframe schema
+2. make the spark app output parquet continuously 
+
+
 ### Futhur Study Requirement
 1. Spark
 2. Parquet
