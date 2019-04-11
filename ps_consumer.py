@@ -32,6 +32,11 @@ def json_to_row(s):
 
 
 def dosth(time, rdd, spark):
+
+    '''
+    # change schema
+    https://stackoverflow.com/questions/46432789/how-to-change-pyspark-data-frame-column-data-type
+    '''
     if rdd.isEmpty():
         return
     sqlContext = getSqlContextInstance(rdd.context)
