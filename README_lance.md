@@ -168,9 +168,9 @@ python spark_readfile.py > tmp 2>&1
 ```
 
 * execute w/ spark-submit
-```
+```shell
 # failed
-spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8:2.4.1 ps_consumer.py
+# spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8:2.4.1 ps_consumer.py
 
 # successful!
 spark-submit --jars /root/.local/share/virtualenvs/gemini_task-p6OkMWYi/lib/python3.7/site-packages/pyspark/jars/spark-streaming-kafka-0-8-assembly_2.11-2.4.1.jar ps_consumer.py

@@ -21,7 +21,7 @@ Run with:
   ./bin/spark-submit examples/src/main/python/sql/basic.py
 
 # ref from
-https://raw.githubusercontent.com/apache/spark/master/examples/src/main/python/sql/basic.py
+https://github.com/apache/spark/blob/master/examples/src/main/python/sql/basic.py
 """
 from __future__ import print_function
 
@@ -44,6 +44,7 @@ def basic_df_example(spark):
     # $example on:create_df$
     # spark is an existing SparkSession
     df = spark.read.json("data/firewall.json")
+    # df = spark.read.json("data/people.json")
     # Displays the content of the DataFrame to stdout
     df.show()
     # +----+-------+
@@ -195,7 +196,7 @@ def programmatic_schema_example(spark):
     # SQL can be run over DataFrames that have been registered as a table.
     results = spark.sql("SELECT name FROM people")
 
-    results.show()
+    # results.show()
     # +-------+
     # |   name|
     # +-------+
@@ -214,7 +215,7 @@ if __name__ == "__main__":
     # sc_conf.set('spark.executor.cores', '4')
     # sc_conf.set('spark.cores.max', '40')
     sc_conf.set('spark.logConf', True)
-
+    sc_conf.set('spark.io.compression.codec', 'snappy')
     # $example on:init_session$
     spark = SparkSession \
         .builder \

@@ -13,14 +13,18 @@ module not found: org.apache.spark#spark-streaming-kafka-0-8;2.4.1
 
 https://stackoverflow.com/questions/2801087/java-nio-channels-closedchannelexception
 
+# stared
+https://github.com/claudiofahey/global_anomaly_detection_demo/blob/master/spark_streaming_processor.py
 
+https://stackoverflow.com/questions/31076224/create-spark-dataframe-in-spark-streaming-from-json-message-on-kafka
 
 '''
 
 from pyspark import SparkContext, SparkConf
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils, TopicAndPartition
-from pyspark.sql import Row, SparkSession
+from pyspark.sql import Row, SparkSession, SQLContext
+from pyspark.streaming.util import rddToFileName
 import sys
 import os
 import json
@@ -33,6 +37,14 @@ directKafkaStream = KafkaUtils.createDirectStream(
     ssc, [topic], {"metadata.broker.list": brokers})
 
 '''
+
+
+def getSqlContextInstance(sparkContext):
+    """Lazily instantiated global instance of SQLContext
+    Below from https://spark.apache.org/docs/1.5.2/streaming-programming-guide.html#dataframe-and-sql-operations."""
+    if ('sqlContextSingletonInstance' not in globals()):
+        globals()['sqlContextSingletonInstance'] = SQLContext(sparkContext)
+    return globals()['sqlContextSingletonInstance']
 
 
 def getSparkSessionInstance(sparkConf):
@@ -61,6 +73,31 @@ def dict2tuple(x: dict):
     return tmp
 
 
+def json_to_row(s):
+    return Row(**json.loads(s))
+
+
+def dosth(time, rdd, spark):
+    if rdd.isEmpty():
+        return
+    sqlContext = getSqlContextInstance(rdd.context)
+    df = sqlContext.createDataFrame(rdd)
+    df.show()
+    df.printSchema()
+    df.groupBy("user").count().show()
+
+    df.createOrReplaceTempView('firewall')
+    sqlDF = spark.sql("select * from firewall limit 3")
+    sqlDF.show()
+    if 0:
+        enriched_data_path = 'data/firewall_df.json'
+        if enriched_data_path:
+            path = rddToFileName(enriched_data_path, None, time)
+            df.write.json(path, mode='error')
+
+    # return rdd.collect()
+
+
 if __name__ == '__main__':
 
     # os.environ['SPARK_LOCAL_IP'] = '172.0.0.1'
@@ -73,10 +110,17 @@ if __name__ == '__main__':
     # sc_conf.set('spark.executor.cores', '4')
     # sc_conf.set('spark.cores.max', '40')
     sc_conf.set('spark.logConf', True)
+    sc_conf.set('spark.io.compression.codec', 'snappy')
+
+    # spark = SparkSession \
+    #     .builder \
+    #     .appName("Python Spark SQL basic example") \
+    #     .config(conf=sc_conf) \
+    #     .getOrCreate()
 
     # sc = SparkContext(master='local[*]', appName='ps_consumer')
     sc = SparkContext(conf=sc_conf)
-    sc.setLogLevel('DEBUG')
+    sc.setLogLevel('INFO')
     # print(sc)
 
     ssc = StreamingContext(sc, 5)
@@ -96,48 +140,61 @@ if __name__ == '__main__':
 
     stream = KafkaUtils.createDirectStream(
         ssc, [topic], kafka_param)
-    print(stream)
+    # print(stream)
+    messages = stream.map(lambda x: x[1])
+    rows = messages.map(json_to_row)
 
-    lines = stream.map(lambda x: json.loads(x[1]))
+    spark = SparkSession.builder.config(conf=sc_conf).getOrCreate()
+
+    rows.foreachRDD(lambda t, rdd: dosth(t, rdd, spark))
+
+    # lines = stream.map(lambda x: json.loads(x[1]))
+    # print(f'lines type {type(lines)}')
     # lines = lines.map(lambda y: (
     # y['timestamp'], y['user'], y['action'], y['app'], y['server']))
-    lines.pprint()
+    # lines.pprint()
 
-    users = lines.map(lambda x: x['user'])
-    users.pprint()
+    # df =
+
+    # users = lines.map(lambda x: x['user'])
+    # users.pprint()
     # tmp = (x['timestamp'], x['user'], x['action'], x['app'], x['server'])
     # spark = SparkSession(sc)
     if 0:
         col_header = ['timestamp', 'user', 'action', 'app', 'server']
         df = lines.toDF(col_header)
-        df.pprint()
+        df.show()
 
-    if 1:
+    if 0:
 
         # Convert RDDs of the words DStream to DataFrame and run SQL query
 
-        def process(time, rdd):
-            print("========= %s =========" % str(time))
-            # spark = SparkSession.builder.config(conf=sc_conf).getOrCreate()
-            spark = getSparkSessionInstance(rdd.context.getConf())
+        # def process(time, rdd):
+        def process(rdd):
+            # print("========= %s =========" % str(time))
+            spark = SparkSession.builder.config(conf=sc_conf).getOrCreate()
+            # spark = getSparkSessionInstance(rdd.context.getConf())
 
-            # rowRdd = rdd.map(dict2sqlrow)
-            rowRdd = rdd.map(lambda w: Row(user=w))
+            rowRdd = rdd.map(dict2sqlrow)
+            # rowRdd = rdd.map(lambda w: Row(user=w))
+            print(dir(rowRdd))
+            print(type(rowRdd))
+            rowRdd.collect()
+            # print(rowRdd.toDF())
             # rowRdd.pprint()
 
-            df = spark.createDataFrame(rowRdd)
-            # dfRdd.show()
-            df.createOrReplaceTempView("firewall")
+            # https://stackoverflow.com/questions/44355416/need-instance-of-rdd-but-returned-class-pyspark-rdd-pipelinedrdd
 
-            aggdf = spark.sql(
-                "select user, count(*) as ucount from firewall group by user")
-            aggdf.show()
-            # aggdf.pprint()
-            # aggdf.print()
-            # aggdf.collect()
+            # df = spark.createDataFrame(rowRdd)
+            # df.show()
+            # df.createOrReplaceTempView("firewall")
 
-        # lines.foreachRDD(process)
-        users.foreachRDD(process)
+            # aggdf = spark.sql(
+            #     "select user, count(*) as ucount from firewall group by user")
+            # aggdf.show()
+
+        lines.foreachRDD(process)
+        # users.foreachRDD(process(users))
 
     ssc.start()
     ssc.awaitTermination()
